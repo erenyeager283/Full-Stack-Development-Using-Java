@@ -1,0 +1,53 @@
+-- 1) Create and use database
+CREATE DATABASE IF NOT EXISTS payment_demo;
+USE payment_demo;
+
+-- 2) Accounts table: holds balance for each account
+CREATE TABLE IF NOT EXISTS accounts (
+    account_id   INT AUTO_INCREMENT PRIMARY KEY,
+    account_name VARCHAR(100) NOT NULL,
+    balance      DECIMAL(10,2) NOT NULL
+);
+
+-- 3) Sample data: one user and one merchant
+INSERT INTO accounts (account_name, balance) VALUES
+('User_Wallet',      5000.00),
+('Merchant_Account', 1000.00);
+
+-- 4) BEFORE transaction: check balances
+SELECT * FROM accounts;
+
+----------------------------------------------------
+-- 5) TRANSACTION: transfer 1500 from user to merchant
+----------------------------------------------------
+START TRANSACTION;
+
+-- a) Deduct from user
+UPDATE accounts
+SET balance = balance - 1500.00
+WHERE account_name = 'User_Wallet';
+
+-- b) Add to merchant
+UPDATE accounts
+SET balance = balance + 1500.00
+WHERE account_name = 'Merchant_Account';
+
+-- c) Check business rule: user balance must not be negative
+--    If negative, ROLLBACK; otherwise COMMIT
+-- (This check is usually done in application code or stored procedure.)
+
+-- Example check (MySQL-style, run manually to decide):
+SELECT balance
+FROM accounts
+WHERE account_name = 'User_Wallet';
+-- If balance >= 0  -> COMMIT;
+-- If balance <  0  -> ROLLBACK;
+
+-- On success:
+COMMIT;
+
+-- On failure (instead of COMMIT above, you would do):
+-- ROLLBACK;
+
+-- 6) AFTER transaction: verify final balances
+SELECT * FROM accounts;
