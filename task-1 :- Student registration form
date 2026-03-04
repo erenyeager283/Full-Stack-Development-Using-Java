@@ -1,0 +1,31 @@
+-- Create database (optional)
+CREATE DATABASE IF NOT EXISTS college;
+USE college;
+
+-- 1. Create table for student registration
+CREATE TABLE IF NOT EXISTS students (
+    student_id INT AUTO_INCREMENT PRIMARY KEY,
+    name       VARCHAR(100) NOT NULL,
+    email      VARCHAR(100) NOT NULL UNIQUE,
+    dob        DATE         NOT NULL,
+    department VARCHAR(50)  NOT NULL,
+    phone      VARCHAR(15)  NOT NULL
+);
+
+-- 2. Insert sample student records
+INSERT INTO students (name, email, dob, department, phone) VALUES
+('Sashidhar', 'sashi@example.com', '2004-01-15', 'CSE', '9876543210'),
+('Vikash',    'vikash@example.com', '2004-05-20', 'IT',  '9123456780'),
+('Ananya',    'ananya@example.com', '2003-11-02', 'ECE', '9000011122');
+
+-- 3. Retrieve all student records
+SELECT student_id, name, email, dob, department, phone
+FROM students;
+
+-- 4. Retrieve students from a specific department (example: CSE)
+SELECT name, email, dob, phone
+FROM students
+WHERE department = 'CSE';
+
+-- 5. Check structure of the table (optional)
+DESCRIBE students;
