@@ -1,0 +1,27 @@
+-- 1. Create database (optional)
+CREATE DATABASE IF NOT EXISTS auth_demo;
+USE auth_demo;
+
+-- 2. Create users table for login
+CREATE TABLE IF NOT EXISTS users (
+    user_id  INT AUTO_INCREMENT PRIMARY KEY,
+    email    VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL
+);
+
+-- 3. Insert sample users (demo passwords – in real apps store hashes)
+INSERT INTO users (email, password) VALUES
+('student1@example.com', 'student123'),
+('admin1@example.com',   'admin123');
+
+-- 4. Check credentials (used inside backend code)
+-- Example for a given email and password:
+SELECT user_id, email
+FROM users
+WHERE email = 'student1@example.com'
+  AND password = 'student123';
+
+-- 5. Get user by email only (for password verification in code)
+SELECT user_id, email, password
+FROM users
+WHERE email = 'student1@example.com';
