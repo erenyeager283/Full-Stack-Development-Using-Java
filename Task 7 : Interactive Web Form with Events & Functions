@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Feedback Form</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f4f6fb; }
+    .form-box {
+      width: 380px; margin: 40px auto; padding: 20px;
+      background:#fff; border-radius:8px;
+      box-shadow:0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 { text-align:center; margin-bottom:15px; }
+    label { display:block; margin-top:10px; font-weight:600; }
+    input, textarea {
+      width:100%; padding:8px; margin-top:4px;
+      border:1px solid #ccc; border-radius:4px;
+      box-sizing:border-box; transition:background 0.2s, border-color 0.2s;
+    }
+    .highlight {
+      border-color:#007bff;
+      background:#e9f3ff;
+    }
+    .error {
+      color:red; font-size:13px; margin-top:2px;
+    }
+    .success {
+      color:green; margin-top:10px; text-align:center;
+    }
+    button {
+      width:100%; padding:10px; margin-top:15px;
+      background:#007bff; color:#fff;
+      border:none; border-radius:4px; cursor:pointer;
+    }
+    button:hover { background:#0056b3; }
+  </style>
+</head>
+<body>
+<div class="form-box">
+  <h2>Feedback Form</h2>
+
+  <form id="feedbackForm">
+    <label for="name">Name</label>
+    <input type="text" id="name">
+    <div id="nameError" class="error"></div>
+
+    <label for="email">Email</label>
+    <input type="email" id="email">
+    <div id="emailError" class="error"></div>
+
+    <label for="message">Message</label>
+    <textarea id="message" rows="4"></textarea>
+    <div id="msgError" class="error"></div>
+
+    <button type="button" id="submitBtn">Submit (Double‑click)</button>
+    <div id="status" class="success"></div>
+  </form>
+</div>
+
+<script>
+  const form   = document.getElementById('feedbackForm');
+  const nameEl = document.getElementById('name');
+  const emailEl= document.getElementById('email');
+  const msgEl  = document.getElementById('message');
+  const status = document.getElementById('status');
+
+  // Generic reusable validator
+  function validateRequired(inputEl, errorEl, message) {
+    if (!inputEl.value.trim()) {
+      errorEl.textContent = message;
+      return false;
+    }
+    errorEl.textContent = "";
+    return true;
+  }
+
+  function validateEmail(inputEl, errorEl) {
+    const value = inputEl.value.trim();
+    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!pattern.test(value)) {
+      errorEl.textContent = "Enter a valid email address";
+      return false;
+    }
+    errorEl.textContent = "";
+    return true;
+  }
+
+  // Highlight inputs on hover
+  [nameEl, emailEl, msgEl].forEach(el => {
+    el.addEventListener('mouseover', () => el.classList.add('highlight'));
+    el.addEventListener('mouseout',  () => el.classList.remove('highlight'));
+  });
+
+  // Validate on keypress (really: on keyup so value is updated)
+  nameEl.addEventListener('keyup', () =>
+    validateRequired(nameEl, document.getElementById('nameError'), "Name is required")
+  );
+  emailEl.addEventListener('keyup', () => {
+    const emailError = document.getElementById('emailError');
+    if (emailEl.value.trim() === "") {
+      emailError.textContent = "Email is required";
+    } else {
+      validateEmail(emailEl, emailError);
+    }
+  });
+  msgEl.addEventListener('keyup', () =>
+    validateRequired(msgEl, document.getElementById('msgError'), "Message is required")
+  );
+
+  // Double‑click submit confirmation
+  document.getElementById('submitBtn').addEventListener('dblclick', function () {
+    const validName = validateRequired(nameEl, document.getElementById('nameError'), "Name is required");
+    const validMsg  = validateRequired(msgEl, document.getElementById('msgError'), "Message is required");
+    const emailError= document.getElementById('emailError');
+
+    let validEmail = false;
+    if (!emailEl.value.trim()) {
+      emailError.textContent = "Email is required";
+    } else {
+      validEmail = validateEmail(emailEl, emailError);
+    }
+
+    if (validName && validEmail && validMsg) {
+      status.textContent = "Thank you! Your feedback has been submitted.";
+      // here you could actually submit via fetch/AJAX if needed
+      // form.submit();
+    } else {
+      status.textContent = "";
+    }
+  });
+</script>
+</body>
+</html>
