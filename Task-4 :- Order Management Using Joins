@@ -1,0 +1,130 @@
+-- Optional: create and use a database
+CREATE DATABASE IF NOT EXISTS shop_demo;
+USE shop_demo;
+
+----------------------------------------------------
+-- 1. TABLE CREATION
+----------------------------------------------------
+
+-- Customers table
+CREATE TABLE IF NOT EXISTS customers (
+    customer_id   INT AUTO_INCREMENT PRIMARY KEY,
+    customer_name VARCHAR(100) NOT NULL,
+    email         VARCHAR(100),
+    phone         VARCHAR(20)
+);
+
+-- Products table
+CREATE TABLE IF NOT EXISTS products (
+    product_id   INT AUTO_INCREMENT PRIMARY KEY,
+    product_name VARCHAR(100) NOT NULL,
+    price        DECIMAL(10,2) NOT NULL
+);
+
+-- Orders table
+CREATE TABLE IF NOT EXISTS orders (
+    order_id    INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT NOT NULL,
+    product_id  INT NOT NULL,
+    order_date  DATE NOT NULL,
+    quantity    INT  NOT NULL,
+    -- total_amount can be stored or computed; here we store it
+    total_amount DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
+    FOREIGN KEY (product_id)  REFERENCES products(product_id)
+);
+
+----------------------------------------------------
+-- 2. SAMPLE DATA
+----------------------------------------------------
+
+INSERT INTO customers (customer_name, email, phone) VALUES
+('Alice',  'alice@example.com',  '9000011111'),
+('Bob',    'bob@example.com',    '9000022222'),
+('Charlie','charlie@example.com','9000033333');
+
+INSERT INTO products (product_name, price) VALUES
+('Laptop',      60000.00),
+('Headphones',   3000.00),
+('Keyboard',     1500.00);
+
+INSERT INTO orders (customer_id, product_id, order_date, quantity, total_amount) VALUES
+(1, 1, '2026-03-01', 1, 60000.00),   -- Alice buys Laptop
+(1, 2, '2026-03-02', 2,  6000.00),   -- Alice buys 2 Headphones
+(2, 3, '2026-03-03', 1,  1500.00),   -- Bob buys Keyboard
+(3, 1, '2026-03-03', 1, 60000.00),   -- Charlie buys Laptop
+(2, 2, '2026-03-04', 3,  9000.00);   -- Bob buys 3 Headphones
+
+----------------------------------------------------
+-- 3. CUSTOMER ORDER HISTORY (JOINS + ORDER BY)
+----------------------------------------------------
+-- Show each order with customer and product details
+
+SELECT
+    o.order_id,
+    c.customer_name,
+    p.product_name,
+    o.order_date,
+    o.quantity,
+    o.total_amount
+FROM orders o
+INNER JOIN customers c ON o.customer_id = c.customer_id   -- join customers & orders [web:61][web:64]
+INNER JOIN products  p ON o.product_id  = p.product_id
+ORDER BY c.customer_name, o.order_date;
+
+----------------------------------------------------
+-- 4. HIGHEST VALUE ORDER (SUBQUERY)
+----------------------------------------------------
+-- Find the order that has the maximum total_amount
+
+SELECT
+    o.order_id,
+    c.customer_name,
+    o.total_amount
+FROM orders o
+JOIN customers c ON o.customer_id = c.customer_id
+WHERE o.total_amount = (
+    SELECT MAX(total_amount)
+    FROM orders
+);
+
+----------------------------------------------------
+-- 5. MOST ACTIVE CUSTOMER (SUBQUERY + GROUP BY)
+----------------------------------------------------
+-- Step 1: count orders per customer
+-- Step 2: pick the maximum count using subquery
+
+SELECT
+    c.customer_id,
+    c.customer_name,
+    order_stats.order_count
+FROM customers c
+JOIN (
+    SELECT customer_id,
+           COUNT(*) AS order_count
+    FROM orders
+    GROUP BY customer_id
+) AS order_stats
+ON c.customer_id = order_stats.customer_id
+WHERE order_stats.order_count = (
+    SELECT MAX(order_count)
+    FROM (
+        SELECT COUNT(*) AS order_count
+        FROM orders
+        GROUP BY customer_id
+    ) AS counts
+);
+
+----------------------------------------------------
+-- 6. OPTIONAL: TOTAL SPEND PER CUSTOMER (USEFUL FOR DASHBOARD)
+----------------------------------------------------
+
+SELECT
+    c.customer_id,
+    c.customer_name,
+    COUNT(o.order_id)          AS total_orders,
+    SUM(o.total_amount)        AS total_spent
+FROM customers c
+LEFT JOIN orders o ON c.customer_id = o.customer_id
+GROUP BY c.customer_id, c.customer_name
+ORDER BY total_spent DESC;
