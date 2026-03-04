@@ -1,0 +1,73 @@
+-- Optional: create and use a database
+CREATE DATABASE IF NOT EXISTS college;
+USE college;
+
+-- 1. Create table for students / employees
+CREATE TABLE IF NOT EXISTS students (
+    student_id INT AUTO_INCREMENT PRIMARY KEY,
+    name       VARCHAR(100) NOT NULL,
+    email      VARCHAR(100) NOT NULL UNIQUE,
+    dob        DATE         NOT NULL,
+    department VARCHAR(50)  NOT NULL,
+    phone      VARCHAR(15)  NOT NULL
+);
+
+-- 2. Insert sample data
+INSERT INTO students (name, email, dob, department, phone) VALUES
+('Sashidhar', 'sashi@example.com',  '2004-01-15', 'CSE', '9876543210'),
+('Ananya',    'ananya@example.com', '2003-11-02', 'ECE', '9000011122'),
+('Vikash',    'vikash@example.com', '2004-05-20', 'IT',  '9123456780'),
+('Rahul',     'rahul@example.com',  '2004-07-10', 'CSE', '9898989898'),
+('Priya',     'priya@example.com',  '2003-03-25', 'EEE', '9012345678');
+
+----------------------------------------------------
+-- DATA RETRIEVAL & SORTING DASHBOARD QUERIES
+----------------------------------------------------
+
+-- 3. Retrieve all records (default list)
+SELECT student_id, name, email, dob, department, phone
+FROM students;
+
+-- 4. Sorting by name (A–Z)
+SELECT student_id, name, email, dob, department, phone
+FROM students
+ORDER BY name ASC;
+
+-- 5. Sorting by name (Z–A)
+SELECT student_id, name, email, dob, department, phone
+FROM students
+ORDER BY name DESC;
+
+-- 6. Sorting by date of birth (oldest first)
+SELECT student_id, name, email, dob, department, phone
+FROM students
+ORDER BY dob ASC;
+
+-- 7. Sorting by date of birth (newest first)
+SELECT student_id, name, email, dob, department, phone
+FROM students
+ORDER BY dob DESC;
+
+-- 8. Filter by single department (example: CSE)
+SELECT student_id, name, email, dob, department, phone
+FROM students
+WHERE department = 'CSE';
+
+-- 9. Filter by multiple departments (example: CSE or IT)
+SELECT student_id, name, email, dob, department, phone
+FROM students
+WHERE department IN ('CSE', 'IT');
+
+-- 10. Count of students per department
+SELECT department,
+       COUNT(*) AS student_count
+FROM students
+GROUP BY department
+ORDER BY department;
+
+-- 11. Count of students per department, ordered by highest count
+SELECT department,
+       COUNT(*) AS student_count
+FROM students
+GROUP BY department
+ORDER BY student_count DESC;
